@@ -1,10 +1,12 @@
+#include <iostream>
+
 #include "Reframing.h"
 
-#include "iostream"
+using namespace std;
 
-int main(int argc, char** argv) {
+int SDL_main(int argc, char* argv[])
+{
 	Reframing app;
-	app.execute();
-	
-	return 0;
+	app.run();
+	return EXIT_SUCCESS;
 }

@@ -1,30 +1,48 @@
 #pragma once
 
+#include <list>
+#include <iostream>
+
 #include "SDL/SDL.h"
 #include "GL/glew.h"
-#include "SDL/SDL.h"
+
+#include "Creation.h"
+
+enum AppStatuses
+{
+	AS_ON = 1,
+	AS_OFF = 0
+};
+
+using namespace std;
+
+class Processor;
 
 class Reframing
 {
-private:
-	struct Window { 
-		SDL_Window* handler; int width, height; 
-	} window;
-	int status;
-	SDL_Event* input;
+	SDL_Window* window;
+	int windowWidth;
+	int windowHeight;
+	int appStatus;
+	list<GameObject*>* objectList;
+	list<Processor*>* activeProcessors;
+	
+	list<Transmitter*>* activeTransmitters;
+	CreationBase* base;
 
 public:
 	Reframing();
 	~Reframing();
 
-	void execute();
+	void run();
 
 private:
-	void initialize();
-	void eventCycle();
-	void getInput();
-	void showChanges();
-
-	bool isExecuting();
+	void initSystems();
+	void initShaders();
+	void initCreations();
+	void eventLoop();
+	void inputProcess();
+	void bypassProcessors();
+	void redrawEverything();
 };
 

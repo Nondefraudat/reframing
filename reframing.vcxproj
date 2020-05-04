@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,29 +19,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Adapter.cpp" />
-    <ClCompile Include="Base.cpp" />
-    <ClCompile Include="Battery.cpp" />
-    <ClCompile Include="Connector.cpp" />
-    <ClCompile Include="ConnectorList.cpp" />
-    <ClCompile Include="ConnectorListNode.cpp" />
-    <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Chassis.cpp" />
+    <ClCompile Include="Creation.cpp" />
+    <ClCompile Include="CreationBase.cpp" />
+    <ClCompile Include="FunctionalObject.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Part.cpp" />
+    <ClCompile Include="Processor.cpp" />
     <ClCompile Include="Reframing.cpp" />
+    <ClCompile Include="Transmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Adapter.h" />
-    <ClInclude Include="Base.h" />
-    <ClInclude Include="Battery.h" />
-    <ClInclude Include="Connector.h" />
-    <ClInclude Include="ConnectorList.h" />
-    <ClInclude Include="ConnectorListNode.h" />
-    <ClInclude Include="Connectors.h" />
-    <ClInclude Include="Engine.h" />
-    <ClInclude Include="Part.h" />
+    <ClInclude Include="ActionResults.h" />
+    <ClInclude Include="Chassis.h" />
+    <ClInclude Include="ConnectionTypes.h" />
+    <ClInclude Include="Creation.h" />
+    <ClInclude Include="CreationBase.h" />
+    <ClInclude Include="FunctionalObject.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="ItemTags.h" />
+    <ClInclude Include="OperationsList.h" />
+    <ClInclude Include="Processor.h" />
     <ClInclude Include="Reframing.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Transmitter.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
