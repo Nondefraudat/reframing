@@ -19,29 +19,42 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Chassis.cpp" />
-    <ClCompile Include="Creation.cpp" />
-    <ClCompile Include="CreationBase.cpp" />
-    <ClCompile Include="FunctionalObject.cpp" />
-    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="AccessoryMaster.cpp" />
+    <ClCompile Include="BaseMaster.cpp" />
+    <ClCompile Include="ChassisMaster.cpp" />
+    <ClCompile Include="CreationMaster.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EnvironmentMaster.cpp" />
+    <ClCompile Include="ErrorMessage.cpp" />
+    <ClCompile Include="Extensions.cpp" />
+    <ClCompile Include="FrameMaster.cpp" />
+    <ClCompile Include="LinkMaster.cpp" />
+    <ClCompile Include="LinkSystemMaster.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Processor.cpp" />
+    <ClCompile Include="PartMaster.cpp" />
+    <ClCompile Include="Pieces.cpp" />
     <ClCompile Include="Reframing.cpp" />
-    <ClCompile Include="Transmitter.cpp" />
+    <ClCompile Include="Shape.cpp" />
+    <ClCompile Include="ShapeMaster.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ActionResults.h" />
-    <ClInclude Include="Chassis.h" />
-    <ClInclude Include="ConnectionTypes.h" />
-    <ClInclude Include="Creation.h" />
-    <ClInclude Include="CreationBase.h" />
-    <ClInclude Include="FunctionalObject.h" />
-    <ClInclude Include="GameObject.h" />
-    <ClInclude Include="ItemTags.h" />
-    <ClInclude Include="OperationsList.h" />
-    <ClInclude Include="Processor.h" />
+    <ClInclude Include="AccessoryMaster.h" />
+    <ClInclude Include="BaseMaster.h" />
+    <ClInclude Include="ChassisMaster.h" />
+    <ClInclude Include="CreationMaster.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="EnvironmentMaster.h" />
+    <ClInclude Include="ErrorMessage.h" />
+    <ClInclude Include="Extensions.h" />
+    <ClInclude Include="FrameMaster.h" />
+    <ClInclude Include="LinkMaster.h" />
+    <ClInclude Include="LinkSystemMaster.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="PartMaster.h" />
+    <ClInclude Include="Pieces.h" />
     <ClInclude Include="Reframing.h" />
-    <ClInclude Include="Transmitter.h" />
+    <ClInclude Include="Shape.h" />
+    <ClInclude Include="ShapeMaster.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

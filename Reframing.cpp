@@ -1,28 +1,65 @@
 #include "Reframing.h"
 
+// Constructors\destructors
+
 Reframing::Reframing()
 {
 	window = nullptr;
 	windowWidth = 1920;
 	windowHeight = 1080;
 	appStatus = AS_OFF;
-	objectList = new list<GameObject*>;
-	// activeProcessors = new list<Processor*>;
-} 
 
+	firstFrame = lastFrame = new Node<Frame>(nullptr);
+
+	creationMaster = new CreationMaster(windowWidth, windowHeight);
+
+	Node<Frame>* currentFrame = firstFrame;
+	for (int i = 0; i < 6; i++)
+	{
+		Creation* creation = creationMaster->generateCreation(0);
+		lastFrame->next = new Node<Frame>(creation);
+		lastFrame->next->prev = lastFrame;
+		lastFrame = lastFrame->next;
+
+		BaseMaster* baseMaster = new BaseMaster(windowWidth, windowHeight);
+		AccessoryMaster* accessoryMaster = new AccessoryMaster(windowWidth, windowHeight);
+		ChassisMaster* chassisMaster = new ChassisMaster(windowWidth, windowHeight);
+
+		Base* base = baseMaster->generateBase(0, creation);
+		Accessory* accessory = accessoryMaster->generateAccessory(0, creation);
+		Chassis* chassis = chassisMaster->generateChassis(0, creation);
+
+		base->connect(1, accessory);
+		base->connect(2, chassis);
+
+		creation->addBase(base);
+		creation->addPart(base);
+
+		creation->addChassis(chassis);
+		creation->addPart(chassis);
+
+		creation->addPart(accessory);
+		creation->spawnInXY((double)(rand() % 200 - 100) / 100, (double)(rand() % 200 - 100) / 100);
+		
+		userFrame = creation;
+	}
+}
 Reframing::~Reframing()
 {
-
+	
 }
+
+// Public methods
 
 void Reframing::run()
 {
 	appStatus = AS_ON;
 	initSystems();
 	initShaders();
-	initCreations();
 	eventLoop();
 }
+
+// Private methods
 
 void Reframing::initSystems()
 {
@@ -31,139 +68,82 @@ void Reframing::initSystems()
 	SDL_GLContext glContext = SDL_GL_CreateContext(window);
 	glewInit();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, true);
-	glClearColor(0, 0, 0, 1.0);
+	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glColor3d(0.0, 0.0, 0.0);
 }
-
 void Reframing::initShaders()
 {
-	/* =)) */
+	/* Coming soon =] */
 }
-
-void Reframing::initCreations()
-{
-	Creation* creation = new Creation(0, 0);
-	objectList = creation->getPartList();
-	activeProcessors = creation->getProcessors();
-	activeTransmitters = creation->getTransmitters();
-}
-
 void Reframing::eventLoop()
 {
 	while (appStatus)
 	{
 		inputProcess();
-		bypassProcessors();
 		redrawEverything();
 	}
 }
 
+double x_u;
+double y_u;
+
 void Reframing::inputProcess()
 {
 	static SDL_Event sdlEvent;
-
-	list<Transmitter*>::iterator it;
-
 	while (SDL_PollEvent(&sdlEvent))
 	{
 		switch (sdlEvent.type)
 		{
-		case SDL_KEYDOWN:
-			switch (sdlEvent.key.keysym.scancode)
-			{
-			case SDL_SCANCODE_LEFT:
-				for (it = activeTransmitters->begin(); it != activeTransmitters->end(); it++)
-				{
-					(*it)->setOperation(OL_MOVE_TOLEFT);
-				}
-				break;
-			case SDL_SCANCODE_RIGHT:
-				for (it = activeTransmitters->begin(); it != activeTransmitters->end(); it++)
-				{
-					(*it)->setOperation(OL_MOVE_TORIGHT);
-				}
-				break;
-			case SDL_SCANCODE_UP:
-				for (it = activeTransmitters->begin(); it != activeTransmitters->end(); it++)
-				{
-					(*it)->setOperation(OL_MOVE_TOUP);
-				}
-				break;
-			case SDL_SCANCODE_DOWN:
-				for (it = activeTransmitters->begin(); it != activeTransmitters->end(); it++)
-				{
-					(*it)->setOperation(OL_MOVE_TODOWN);
-				}
-				break;
-			default:
-				for (it = activeTransmitters->begin(); it != activeTransmitters->end(); it++)
-				{
-					(*it)->setOperation(OL_PASS);
-				}
-				break;
-			}
-			break;
 		case SDL_QUIT:
 			appStatus = AS_OFF;
+			break;
+
+		case SDL_MOUSEMOTION:
+			x_u = ((double)sdlEvent.motion.x - (double)0.5 * windowWidth) / windowWidth * 2;
+			y_u = -((double)sdlEvent.motion.y - (double)0.5 * windowHeight) / windowHeight * 2;
+			break;
+		default:
 			break;
 		}
 	}
 }
 
-void Reframing::bypassProcessors()
-{
-	list<Processor*>::iterator it;
-	for (it = activeProcessors->begin(); it != activeProcessors->end(); it++)
-	{
-		(*it)->work();
-	}
-}
+int lol[] = { 0, 0, 0, 0, 0, 0 };
+double* x = new double[6];
+double* y = new double[6];
 
 void Reframing::redrawEverything()
 {
 	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	glBegin(GL_TRIANGLES);
+
+	Node<Frame>* currentFrame = firstFrame;
+	int i = 0;
+	while (currentFrame->next)
 	{
-		double x1, x2;
-		double y1, y2;
-		list<GameObject*>::iterator it;
-		for (it = objectList->begin(); it != objectList->end(); it++)
+		currentFrame = currentFrame->next;
+		currentFrame->value->showAll();
+		
+		if (currentFrame->value != userFrame)
 		{
-			x1 = (double)(*it)->getX() / windowWidth * 2;
-			y1 = (double)(*it)->getY() / windowHeight * 2;
-			x2 = x1 + (double)(*it)->getWidth() / windowWidth * 2;
-			y2 = y1 - (double)(*it)->getHeight() / windowHeight * 2;
-		
-			switch ((*it)->getItemTag())
-			{
-			case IT_BASE:
-				glColor4d(1.0, 1.0, 0, 0.2);
-				break;
-			case IT_PROCESOR:
-				glColor4d(1.0, 0, 0, 0.2);
-				break;
-			case IT_TRANSMITTER:
-				glColor4d(0, 1.0, 1.0, 0.2);
-				break;
-			case IT_CHASSIS:
-				glColor4d(0, 0, 1.0, 0.2);
-				break;
-			case IT_DEFAULT:
-				glColor4d(0.6, 0.6, 0.6, 0.2);
-				break;
-			}
-		
-			glVertex2d(x1, y1);
-			glVertex2d(x2, y1);
-			glVertex2d(x1, y2);
-		
-			glVertex2d(x2, y1);
-			glVertex2d(x1, y2);
-			glVertex2d(x2, y2);
+			currentFrame->value->moveToXY(x[i], y[i], firstFrame);
 		}
+		else
+		{
+			currentFrame->value->moveToXY(x_u, y_u, firstFrame);
+		}
+		if (lol[i])
+		{
+			lol[i]--;
+		}
+		else
+		{
+			lol[i] = rand() % 200 + 150;
+			x[i] = (double)(rand() % 200 - 100) / 100;
+			y[i] = (double)(rand() % 200 - 100) / 100;
+		}
+		i++;
 	}
-	glEnd();
 
 	SDL_GL_SwapWindow(window);
 }
