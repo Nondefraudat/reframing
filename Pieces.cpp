@@ -120,11 +120,12 @@ Part* Frame::diffusion(Node<Frame>* firstFrame)
 
 // Part constructors\destructors
 
-Part::Part(const char** title, const char** description, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame) :
+Part::Part(const char** title, const char** description, double totalResistance, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame) :
 	Entity(title, description)
 {
 	this->linkSystem = linkSystem;
 	this->shape = shape;
+	this->totalResistance = totalResistance;
 	frame = this->defaultFrame = defaultFrame;
 	x = xRev = y = 0.0;
 }

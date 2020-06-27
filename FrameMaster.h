@@ -4,6 +4,7 @@
 #include "BaseMaster.h"
 #include "AccessoryMaster.h"
 #include "ChassisMaster.h"
+#include "DecorationMaster.h"
 
 
 class FrameMaster

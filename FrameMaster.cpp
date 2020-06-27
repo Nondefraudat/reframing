@@ -21,8 +21,8 @@ FrameMaster::FrameMaster(int windowWidth, int windowHeight)
 	identifierPres[0] = 0;
 	gravityMultPres[0] = 0.0;
 
-	titlePres[0] = "Test frame";
-	descriptionPres[0] = "No information given";
-	identifierPres[0] = 1;
-	gravityMultPres[0] = 1.0;
+	titlePres[1] = "Test frame";
+	descriptionPres[1] = "No information given";
+	identifierPres[1] = 1;
+	gravityMultPres[1] = 0.01;
 }

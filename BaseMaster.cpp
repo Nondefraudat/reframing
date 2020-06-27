@@ -19,7 +19,8 @@ Base* BaseMaster::generateBase(int baseIndex, Frame* defaultFrame)
 {
     if (baseIndex < maxBaseIndex)
     {
-        return new Base(&titlePres[partIndexes[baseIndex]], &descriptionsPres[partIndexes[baseIndex]], 
+        return new Base(&titlePres[partIndexes[baseIndex]], &descriptionsPres[partIndexes[baseIndex]],
+            totalResistancePres[partIndexes[baseIndex]],
             linkSystemMaster->generateLinkSystem(linkSystemInexes[partIndexes[baseIndex]]), 
             shapeMaster->generateShape(shapeIndexes[partIndexes[baseIndex]]), defaultFrame,
             defaultSpawnPointDisplacementXPxlPres[baseIndex],

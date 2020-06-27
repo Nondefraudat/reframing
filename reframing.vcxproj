@@ -22,7 +22,9 @@
     <ClCompile Include="AccessoryMaster.cpp" />
     <ClCompile Include="BaseMaster.cpp" />
     <ClCompile Include="ChassisMaster.cpp" />
+    <ClCompile Include="ContactWeaponMaster.cpp" />
     <ClCompile Include="CreationMaster.cpp" />
+    <ClCompile Include="DecorationMaster.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EnvironmentMaster.cpp" />
     <ClCompile Include="ErrorMessage.cpp" />
@@ -41,7 +43,9 @@
     <ClInclude Include="AccessoryMaster.h" />
     <ClInclude Include="BaseMaster.h" />
     <ClInclude Include="ChassisMaster.h" />
+    <ClInclude Include="ContactWeaponMaster.h" />
     <ClInclude Include="CreationMaster.h" />
+    <ClInclude Include="DecorationMaster.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EnvironmentMaster.h" />
     <ClInclude Include="ErrorMessage.h" />

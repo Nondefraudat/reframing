@@ -19,6 +19,8 @@ protected:
 
 	int* linkSystemInexes;
 	int* shapeIndexes;
+	
+	double* totalResistancePres;
 
 	int windowWidth;
 	int windowHeight;

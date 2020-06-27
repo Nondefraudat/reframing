@@ -15,6 +15,7 @@ Accessory* AccessoryMaster::generateAccessory(int accessoryIndex, Frame* default
 	if (accessoryIndex < maxAccessoryIndex)
 	{
 		return new Accessory(&titlePres[partIndexes[accessoryIndex]], &descriptionsPres[partIndexes[accessoryIndex]],
+			totalResistancePres[partIndexes[accessoryIndex]],
 			linkSystemMaster->generateLinkSystem(linkSystemInexes[partIndexes[accessoryIndex]]),
 			shapeMaster->generateShape(shapeIndexes[partIndexes[accessoryIndex]]), defaultFrame);
 	}

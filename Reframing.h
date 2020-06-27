@@ -9,6 +9,7 @@
 #include "Node.h"
 #include "CreationMaster.h"
 #include "EnvironmentMaster.h"
+#include "ContactWeaponMaster.h"
 
 
 enum AppStatuses
@@ -32,6 +33,7 @@ class Reframing
 	Frame* userFrame;
 
 	Node<Frame>* firstFrame, * lastFrame;
+	Environment* envirenment;
 
 public:
 	Reframing();

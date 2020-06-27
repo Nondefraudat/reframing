@@ -96,6 +96,12 @@
     <ClCompile Include="Shape.cpp">
       <Filter>Исходные файлы\Misc</Filter>
     </ClCompile>
+    <ClCompile Include="DecorationMaster.cpp">
+      <Filter>Исходные файлы\GenerationMasters\PartMasters</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactWeaponMaster.cpp">
+      <Filter>Исходные файлы\GenerationMasters\PartMasters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShapeMaster.h">
@@ -148,6 +154,12 @@
     </ClInclude>
     <ClInclude Include="Reframing.h">
       <Filter>Файлы заголовков\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="DecorationMaster.h">
+      <Filter>Файлы заголовков\GenerationMasters\PartMasters</Filter>
+    </ClInclude>
+    <ClInclude Include="ContactWeaponMaster.h">
+      <Filter>Файлы заголовков\GenerationMasters\PartMasters</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

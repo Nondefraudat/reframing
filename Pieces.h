@@ -18,9 +18,9 @@ class Frame : public Entity
 	
 	int stat;
 
-	double gravityMult;
 
 protected:
+	double gravityMult;
 	int phase;
 	bool reverse;
 
@@ -66,11 +66,13 @@ class Part : public Entity
 	double xRev;
 	double y;
 
+	double totalResistance;
+
 	Frame* frame;
 	Frame* defaultFrame;
 
 public:
-	Part(const char** title, const char** description, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame);
+	Part(const char** title, const char** description, double totalResistance, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame);
 
 	LinkSystem* getLinkSystem();
 

@@ -31,6 +31,12 @@ class Shape
 	int windowWidth;
 	int windowHeight;
 
+	double shapeWidth;
+	double shapeHeight;
+
+	double maxX, maxY;
+	double minX, minY;
+
 	int phaseCount;
 	int* viewChangeOrderCounts;
 	int** viewChangeOrders;
@@ -42,6 +48,13 @@ public:
 	void draw(double x, double y, int phase, bool reverse = false);
 
 	bool diffusion(Shape* shape, double factorX, double factorY);
+
+	double getMaxX();
+	double getMaxY();
+	double getMinX();
+	double getMinY();
+
+	void setPhisical(bool value);
 
 protected:
 	void phaseChanging(int phase);

@@ -6,9 +6,17 @@ class ChassisMaster :
     public PartMaster
 {
     int maxChassisIndex;
+	
+	double* horisontalBoostMultPres;
+	double* verticalBoostMultPres;
 
-    double* horisontalSpeedMultPres;
-    double* verticalSpeedMultPres;
+	double* maxHorisontalSpeedMultPres;
+	double* maxVerticalSpeedMultPres;
+
+	double* horisontalBreakMultPres;
+	double* verticalBreakMultPres;
+
+	double* jumpPowerMultPres;
 
     int* partIndexes;
 

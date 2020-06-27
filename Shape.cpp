@@ -64,15 +64,33 @@ Shape::Shape(int viewCount, int vertexCount, int** vertexDataPxl, int phaseCount
 	phisical = true;
 
 	radius = 0.0;
-	double counter = radius;
-	for (int i = 0; i < vertexCount * 2; i++)
+	double counter;
+	maxX = minX = activeShape[0];
+	maxY = minY = activeShape[1];
+	for (int i = 2; i < vertexCount * 2; i++)
 	{
-		counter = (double)pow(activeShape[i], 2);
-		i++;
-		counter = sqrt(counter + pow(activeShape[i], 2));
-		if (counter > radius)
+		if (activeShape[i] > maxX)
 		{
-			radius = counter;
+			maxX = activeShape[i];
+		}
+		else
+		{
+			if (activeShape[i] < minX)
+			{
+				minX = activeShape[i];
+			}
+		}
+		i++;
+		if (activeShape[i] > maxY)
+		{
+			maxY = activeShape[i];
+		}
+		else
+		{
+			if (activeShape[i] < minY)
+			{
+				minY = activeShape[i];
+			}
 		}
 	}
 }
@@ -131,9 +149,154 @@ void Shape::draw(double x, double y, int phase, bool reverse)
 bool Shape::diffusion(Shape* shape, double factorX, double factorY)
 {
 	double counter = sqrt(pow(factorX, 2) + pow(factorY, 2));
-	if (counter < (radius + shape->radius))
+	if ((factorX <= maxX - shape->minX and factorX >= minX - shape->maxX) and (factorY <= maxY - shape->minY and factorY >= minY - shape->maxY) and phisical and shape->phisical)
 	{
-		double min = sqrt(pow(shape->activeShape[0] + factorX - activeShape[0], 2) + pow(shape->activeShape[1] + factorY - activeShape[1], 2));
+		for (int i = 0; i < vertexCount * 2; i += 6)
+		{
+			for (int j = 0; j < shape->vertexCount * 2; j += 2)
+			{
+				double x0 = shape->activeShape[j] + factorX;
+				double x1 = activeShape[i];
+				double x2 = activeShape[i + 2];
+				double x3 = activeShape[i + 4];
+
+				double y0 = shape->activeShape[j + 1] + factorY;
+				double y1 = activeShape[i + 1];
+				double y2 = activeShape[i + 3];
+				double y3 = activeShape[i + 5];
+				int counter = 0;
+
+				double result = (x1 - x0) * (y2 - y1) - (x2 - x1) * (y1 - y0);
+				if (!result)
+				{
+					return true;
+				}
+				else
+				{
+					if (result > 0)
+					{
+						counter++;
+					}
+					else
+					{
+						counter--;
+					}
+				}
+
+				result = (x2 - x0) * (y3 - y2) - (x3 - x2) * (y2 - y0);
+				if (!result)
+				{
+					return true;
+				}
+				else
+				{
+					if (result > 0)
+					{
+						counter++;
+					}
+					else
+					{
+						counter--;
+					}
+				}
+
+				result = (x3 - x0) * (y1 - y3) - (x1 - x3) * (y3 - y0);
+				if (!result)
+				{
+					return true;
+				}
+				else
+				{
+					if (result > 0)
+					{
+						counter++;
+					}
+					else
+					{
+						counter--;
+					}
+				}
+				if (abs(counter) == 3)
+				{
+					return true;
+				}
+			}
+		}
+
+		for (int i = 0; i < shape->vertexCount * 2; i += 6)
+		{
+			for (int j = 0; j < vertexCount * 2; j += 2)
+			{
+				double x0 = activeShape[j] - factorX;
+				double x1 = shape->activeShape[i];
+				double x2 = shape->activeShape[i + 2];
+				double x3 = shape->activeShape[i + 4];
+
+				double y0 = activeShape[j + 1] - factorY;
+				double y1 = shape->activeShape[i + 1];
+				double y2 = shape->activeShape[i + 3];
+				double y3 = shape->activeShape[i + 5];
+				int counter = 0;
+
+				double result = (x1 - x0) * (y2 - y1) - (x2 - x1) * (y1 - y0);
+				if (!result)
+				{
+					return true;
+				}
+				else
+				{
+					if (result > 0)
+					{
+						counter++;
+					}
+					else
+					{
+						counter--;
+					}
+				}
+
+				result = (x2 - x0) * (y3 - y2) - (x3 - x2) * (y2 - y0);
+				if (!result)
+				{
+					return true;
+				}
+				else
+				{
+					if (result > 0)
+					{
+						counter++;
+					}
+					else
+					{
+						counter--;
+					}
+				}
+
+				result = (x3 - x0) * (y1 - y3) - (x1 - x3) * (y3 - y0);
+				if (!result)
+				{
+					return true;
+				}
+				else
+				{
+					if (result > 0)
+					{
+						counter++;
+					}
+					else
+					{
+						counter--;
+					}
+				}
+				if (abs(counter) == 3)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+		/*double min = sqrt(pow(shape->activeShape[0] + factorX - activeShape[0], 2) + pow(shape->activeShape[1] + factorY - activeShape[1], 2));
 		double xValue_i = activeShape[0];
 		double yValue_i = activeShape[1];
 		double xValue_j = shape->activeShape[0];
@@ -153,7 +316,6 @@ bool Shape::diffusion(Shape* shape, double factorX, double factorY)
 				}
 			}
 		}
-
 		for (int i = 0; i < vertexCount * 2; i += 2)
 		{
 			double result;
@@ -302,9 +464,36 @@ bool Shape::diffusion(Shape* shape, double factorX, double factorY)
 			}
 		}
 		return false;
+	*/
 	}
 	return false;
 }
+
+double Shape::getMaxX()
+{
+	return maxX;
+}
+
+double Shape::getMaxY()
+{
+	return maxY;
+}
+
+double Shape::getMinX()
+{
+	return minX;
+}
+
+double Shape::getMinY()
+{
+	return minY;
+}
+
+void Shape::setPhisical(bool value)
+{
+	phisical = value;
+}
+
 
 // Private methods
  
@@ -337,6 +526,7 @@ void Shape::phaseChanging(int phase)
 	{
 		for (int i = 0; i < vertexCount * 2; i++)
 		{
+
 			if (abs(vertexData[viewChangeOrders[activePhase][currentView]][i] - activeShape[i]) < abs(phaseDifferences[i]))
 			{
 				activeShape[i] = vertexData[viewChangeOrders[activePhase][currentView]][i];
@@ -360,15 +550,32 @@ void Shape::phaseChanging(int phase)
 			}
 		}
 		currentPhaseStage++;
-		double counter = radius;
-		for (int i = 0; i < vertexCount * 2; i++)
+		maxX = minX = activeShape[0];
+		maxY = minY = activeShape[1];
+		for (int i = 2; i < vertexCount * 2; i++)
 		{
-			counter = pow(activeShape[i], 2);
-			i++;
-			counter = sqrt(counter + pow(activeShape[i], 2));
-			if (counter > radius)
+			if (activeShape[i] > maxX)
 			{
-				radius = counter;
+				maxX = activeShape[i];
+			}
+			else
+			{
+				if (activeShape[i] < minX)
+				{
+					minX = activeShape[i];
+				}
+			}
+			i++;
+			if (activeShape[i] > maxY)
+			{
+				maxY = activeShape[i];
+			}
+			else
+			{
+				if (activeShape[i] < minY)
+				{
+					minY = activeShape[i];
+				}
 			}
 		}
 	}

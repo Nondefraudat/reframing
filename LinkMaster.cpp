@@ -7,7 +7,7 @@ LinkMaster::LinkMaster(int windowWidth, int windowHeight)
 	this->windowWidth = windowWidth;
 	this->windowHeight = windowHeight;
 
-	maxLinkIndex = 3;
+	maxLinkIndex = 4;
 
 	titlePres = new const char* [maxLinkIndex];
 	descriptionPres = new const char* [maxLinkIndex];
@@ -30,6 +30,12 @@ LinkMaster::LinkMaster(int windowWidth, int windowHeight)
 	titlePres[2] = "Chassis test link";
 	descriptionPres[2] = "No information given";
 	identifiersPres[2] = 2;
+
+	// ContactWeapon test link
+
+	titlePres[3] = "ContactWeapon test link";
+	descriptionPres[3] = "No information given";
+	identifiersPres[3] = 3;
 }
 
 // Methods

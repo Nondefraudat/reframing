@@ -15,6 +15,23 @@ Creation::Creation(const char** title, const char** description, int windowWidth
 
 	firstBase = lastBase = new Node<Base>(nullptr);
 	firstChassis = lastChassis = new Node<Chassis>(nullptr);
+
+	horisontalSpeed = 0.0;
+	verticalSpeed = 0.0;
+
+	horisontalBoost = 0.0;
+	verticalBoost = 0.0;
+
+	maxHorisontalSpeed = 0.0;
+	maxVerticalSpeed = 0.0;
+
+	defaultHorisontalFactor = (double)10 / windowWidth * 2;
+	defaultVerticalFactor = (double)10 / windowHeight * 2;
+
+	gravitationFactor = gravityMult * defaultVerticalFactor;
+	fallRate = 0.0;
+
+	jumpPower = 0.0;
 }
 
 // Creeation methods
@@ -31,6 +48,42 @@ void Creation::addChassis(Chassis* chassis)
 	lastChassis->next = new Node<Chassis>(chassis);
 	lastChassis->next->prev = lastChassis;
 	lastChassis = lastChassis->next;
+
+	double addHorisontalBoost = lastChassis->value->getHorizontalBoostMult() * defaultHorisontalFactor;
+	double addVerticalBoost = lastChassis->value->getVerticalBoostMult() * defaultVerticalFactor;
+
+	double addMaxHorisontalSpeed = lastChassis->value->getMaxHorisontalSpeedMult() * defaultHorisontalFactor;
+	double addMaxVerticalSpeed = lastChassis->value->getMaxVerticalSpeedMult() * defaultVerticalFactor;
+
+	horisontalBoost += addHorisontalBoost;
+	verticalBoost += addVerticalBoost;
+
+	if (maxHorisontalSpeed == 0.0)
+	{
+		maxHorisontalSpeed = addMaxHorisontalSpeed;
+	}
+	else
+	{
+		if (maxHorisontalSpeed > addMaxHorisontalSpeed)
+		{
+			maxHorisontalSpeed = addMaxHorisontalSpeed;
+		}
+	}
+	if (maxVerticalSpeed == 0.0)
+	{
+		maxVerticalSpeed = addMaxVerticalSpeed;
+	}
+	else
+	{
+		if (maxVerticalSpeed > addMaxVerticalSpeed)
+		{
+			maxVerticalSpeed = addMaxVerticalSpeed;
+		}
+	}
+
+	double addJumpPower = lastChassis->value->getJumpPowerMult() * defaultVerticalFactor;
+
+	jumpPower += addJumpPower;
 }
 
 void Creation::removeBase(Base* base)
@@ -90,207 +143,300 @@ void Creation::spawnInXY(double x, double y)
 
 void Creation::moveToXY(double x, double y, Node<Frame>* firstFrame)
 {
-	Node<Base>* currentBase = firstBase;
-	while (currentBase->next)
+	if (firstBase->next)
 	{
-		currentBase = currentBase->next;
+		double sourceX = firstBase->next->value->getX();
+		double sourceY = firstBase->next->value->getY();
 
-		double horisontalMult = 0.0;
-		double verticalMult = 0.0;
-		
-		Node<Chassis>* currentChassis = firstChassis;
-		while (currentChassis->next)
+		double diffrenceX = x - sourceX;
+		double diffrenceY = y - sourceY;
+
+		gravitation(firstFrame);
+		horisontalMove(diffrenceX, firstFrame);
+		verticalMove(diffrenceY, firstFrame);
+		for (int i = 0; i < 8; i++)
 		{
-			currentChassis = currentChassis->next;
-			if (currentChassis->value->getLinkSystem()->getConnectors()[0]->getConnection() == currentBase->value)
+			tryToGetOut(firstFrame);
+		}
+	}
+}
+
+void Creation::horisontalMove(double distance, Node<Frame>* firstFrame)
+{
+	if (firstBase->next)
+	{
+		double factor = 0.0;
+		if (distance != 0.0)
+		{
+			factor = distance / abs(distance);
+		}
+
+		horisontalSpeed += horisontalBoost * factor;
+		if (abs(horisontalSpeed) > maxHorisontalSpeed)
+		{
+			horisontalSpeed = maxHorisontalSpeed * factor;
+		}
+
+		phase = 1;
+		if (factor == 0.0)
+		{
+			phase = 0;
+			horisontalSpeed = 0.0;
+		}
+		else
+		{
+			if (factor < 0.0)
 			{
-				horisontalMult = (horisontalMult + currentChassis->value->getHorizontalSpeedMult()) / 2;
-				verticalMult = (verticalMult + currentChassis->value->getVerticalSpeedMult()) / 2;
+				reverse = true;
+				if (horisontalSpeed < distance)
+				{
+					horisontalSpeed = distance;
+					phase = 0;
+				}
 			}
-		}
-		
-		double differenceX = x - currentBase->value->getX();
-		double differenceY = y - currentBase->value->getY();
-		
-		double range = sqrt(pow(differenceX, 2) + pow(differenceY, 2));
-
-		double horisontalFactor = ((double)10 * horisontalMult) / windowWidth * 2;
-		double verticalFactor = ((double)10 * verticalMult) / windowHeight * 2;
-
-		double factorX;
-		double factorY;
-		if (range)
-		{
-			factorX = currentBase->value->getX() + differenceX * (horisontalFactor / range);
-			factorY = currentBase->value->getY() + differenceY * (verticalFactor / range);
-		}
-		else
-		{
-			factorX = currentBase->value->getX();
-			factorY = currentBase->value->getY();
-		}
-
-		double prevX = currentBase->value->getX();
-		double prevY = currentBase->value->getY();
-
-		if (factorX < prevX)
-		{
-			reverse = true;
-		}
-		else
-		{
-			if (factorX > prevX)
+			else
 			{
 				reverse = false;
+				if (horisontalSpeed > distance)
+				{
+					horisontalSpeed = distance;
+					phase = 0;
+				}
 			}
 		}
-		phase = 1;
-		if (range <= sqrt(pow(factorX - prevX, 2) + pow(factorY - prevY, 2)))
+
+		double sourceX = firstBase->next->value->getX();
+		double sourceY = firstBase->next->value->getY();
+
+		double factorX = (double)1 / windowWidth * 2;
+		double addX = 0.0;
+		double absHorisontalSpeed = abs(horisontalSpeed);
+		Part* part = diffusion(firstFrame);
+
+		if (!part)
 		{
-			factorX = x;
-			factorY = y;
-			phase = 0;
+			while (!part and addX < absHorisontalSpeed)
+			{
+				addX += factorX;
+				if (addX > absHorisontalSpeed)
+				{
+					addX = absHorisontalSpeed;
+				}
+				spawnInXY(sourceX + addX * factor, sourceY);
+				part = diffusion(firstFrame);
+			}
+			if (part)
+			{
+				horisontalSpeed = 0.0;
+				if (fallRate < 0.0)
+				{
+					fallRate = abs(gravitationFactor);
+				}
+				addX -= factorX;
+				spawnInXY(sourceX + addX * factor, sourceY);
+				part = diffusion(firstFrame);
+			}
 		}
-		Part* part = nullptr;
-		spawnInXY(factorX, factorY);
-		part = diffusion(firstFrame);
+	}
+}
+
+void Creation::verticalMove(double distance, Node<Frame>* firstFrame)
+{
+	if (firstBase->next and distance != 0.0)
+	{
+		double factor = 0.0;
+		if (distance != 0.0)
+		{
+			factor = distance / abs(distance);
+		}
+
+		verticalSpeed += verticalBoost * factor;
+		if (abs(verticalSpeed) > maxVerticalSpeed)
+		{
+			verticalSpeed = maxVerticalSpeed * factor;
+		}
+
+		if (factor == 0.0)
+		{
+			verticalSpeed = 0.0;
+		}
+		else
+		{
+			if (factor < 0.0)
+			{
+				if (verticalSpeed < distance)
+				{
+					verticalSpeed = distance;
+				}
+			}
+			else
+			{
+				if (verticalSpeed > distance)
+				{
+					verticalSpeed = distance;
+				}
+			}
+		}
+
+		double sourceX = firstBase->next->value->getX();
+		double sourceY = firstBase->next->value->getY();
+
+		double factorY = (double)1 / windowHeight * 2;
+		double addY = 0.0;
+		double absVerticalSpeed = abs(verticalSpeed);
+		Part* part = diffusion(firstFrame);
+
+		if (!part)
+		{
+			while (!part and addY < absVerticalSpeed)
+			{
+				addY += factorY;
+				if (addY > absVerticalSpeed)
+				{
+					addY = absVerticalSpeed;
+				}
+				spawnInXY(sourceX, sourceY + addY * factor);
+				part = diffusion(firstFrame);
+			}
+			if (part)
+			{
+				verticalSpeed = 0.0; 
+				if (fallRate < 0.0)
+				{
+					fallRate = abs(gravitationFactor);
+				}
+				addY -= factorY;
+				spawnInXY(sourceX, sourceY + addY * factor);
+				part = diffusion(firstFrame);
+			}
+		}
+	}
+}
+
+void Creation::gravitation(Node<Frame>* firstFrame)
+{
+	if (firstBase->next)
+	{	
+		fallRate += gravitationFactor;
+		
+		double factor = 0.0;
+		if (fallRate != 0.0)
+		{
+			factor = fallRate / abs(fallRate);
+		}
+		
+
+		double sourceX = firstBase->next->value->getX();
+		double sourceY = firstBase->next->value->getY();
+
+		double factorY = (double)1 / windowHeight * 2;
+		double addY = 0.0;
+		double absFallRate = abs(fallRate);
+		Part* part = diffusion(firstFrame);
+
+		if (!part)
+		{
+			while (!part and addY < absFallRate)
+			{
+				addY += factorY;
+				spawnInXY(sourceX, sourceY - addY * factor);
+				part = diffusion(firstFrame);
+			}
+			if (part)
+			{
+				if (fallRate < 0.0)
+				{
+					fallRate = abs(gravitationFactor);
+				}
+				else
+				{
+					fallRate = 0.0;
+				}
+				addY -= factorY;
+				spawnInXY(sourceX, sourceY - addY * factor);
+				part = diffusion(firstFrame);
+			}
+		}
+		
+	}
+}
+
+void Creation::tryToGetOut(Node<Frame>* firstFrame)
+{
+	if (firstBase->next)
+	{
+		Part* part = diffusion(firstFrame);
+		
 		if (part)
 		{
-			differenceX = part->getX() - factorX;
-			differenceY = part->getY() - factorY;
+			if (fallRate < 0.0)
+			{
+				fallRate = abs(gravitationFactor);
+			}
+			double sourceX = firstBase->next->value->getX(); 
+			double sourceY = firstBase->next->value->getY();
 
-			differenceX /= abs(differenceX);
-			differenceY /= abs(differenceY);
+			double differenceX = sourceX - part->getX();
+			double differenceY = sourceY - part->getY();
 
-			horisontalFactor = (double)1 / windowWidth * 2 * differenceX;
-			verticalFactor = (double)1 / windowHeight * 2 * differenceY;
+			int differenceXPxl = round(differenceX / 2 * windowWidth);
+			int differenceYPxl = round(differenceY / 2 * windowHeight);
 
-			factorX -= horisontalFactor;
-			factorY -= verticalFactor;
-			spawnInXY(factorX, factorY);
+			Shape* shape_1 = firstBase->next->value->getShape();
+			Shape* shape_2 = part->getShape();
+
+			double horisontalFactor = 1;
+			double verticalFactor = 1;
+
+			double ratioX = 0.0;
+			if (differenceX != 0.0)
+			{
+				if (differenceX < 0.0)
+				{
+					ratioX = (differenceX + shape_1->getMaxX()) / (shape_2->getMinX());
+					horisontalFactor *= -1;
+				}
+				else
+				{
+					ratioX = (differenceX + shape_1->getMinX()) / (shape_2->getMaxX());
+				}
+			}
+
+			double ratioY = 0.0;
+			if (differenceY != 0.0)
+			{
+				if (differenceY < 0.0)
+				{
+					ratioY = (differenceY + shape_1->getMaxY()) / (shape_2->getMinY());
+					verticalFactor *= -1;
+				}
+				else
+				{
+					ratioY = (differenceY + shape_1->getMinY()) / (shape_2->getMaxY());
+				}
+			}
+
+			if (ratioY > ratioX)
+			{
+				double factorY = (double)1 / windowHeight * 2 * verticalFactor;
+				sourceY += factorY;
+			}
+			else
+			{
+				double factorX = (double)1 / windowWidth * 2 * horisontalFactor;
+				sourceX += factorX;
+			}
+			spawnInXY(sourceX, sourceY);
 		}
 	}
 }
 
-void Creation::moveToRight(Node<Frame>* firstFrame)
+void Creation::jump(Node<Frame>* firstFrame)
 {
-	Node<Base>* currentBase = firstBase;
-	while (currentBase->next)
+	if (fallRate == 0.0)
 	{
-		currentBase = currentBase->next;
-
-		double horisontalMult = 0.0;
-
-		Node<Chassis>* currentChassis = firstChassis;
-		while (currentChassis->next)
-		{
-			currentChassis = currentChassis->next;
-			if (currentChassis->value->getLinkSystem()->getConnectors()[0]->getConnection() == currentBase->value)
-			{
-				horisontalMult = (horisontalMult + currentChassis->value->getHorizontalSpeedMult()) / 2;
-			}
-		}
-
-		double prevX = currentBase->value->getX();
-		double prevY = currentBase->value->getY();
-
-		double factorX = prevX + horisontalMult;
-		double factorY = prevY;
-
-		Part* part = nullptr;
-		do
-		{
-			spawnInXY(factorX, factorY);
-			part = diffusion(firstFrame);
-			if (part)
-			{
-				double differenceX = part->getX() - factorX;
-				double differenceY = part->getX() - factorX;
-
-				if (differenceX != 0)
-				{
-					differenceX /= abs(differenceX);
-				}
-				if (differenceY != 0)
-				{
-					differenceY /= abs(differenceY);
-				}
-
-				double horisontalFactor = (double)1 / windowWidth * 2 * differenceX;
-				double verticalFactor = (double)1 / windowHeight * 2 * differenceY;
-
-				factorX += horisontalFactor;
-				factorY += verticalFactor;
-			}
-		} while (part);
+		fallRate = -jumpPower;
 	}
-}
-
-void Creation::moveToLeft(Node<Frame>* firstFrame)
-{
-	Node<Base>* currentBase = firstBase;
-	while (currentBase->next)
-	{
-		currentBase = currentBase->next;
-
-		double horisontalMult = 0.0;
-
-		Node<Chassis>* currentChassis = firstChassis;
-		while (currentChassis->next)
-		{
-			currentChassis = currentChassis->next;
-			if (currentChassis->value->getLinkSystem()->getConnectors()[0]->getConnection() == currentBase->value)
-			{
-				horisontalMult = (horisontalMult + currentChassis->value->getHorizontalSpeedMult()) / 2;
-			}
-		}
-
-		double prevX = currentBase->value->getX();
-		double prevY = currentBase->value->getY();
-
-		double factorX = prevX - horisontalMult;
-		double factorY = prevY;
-
-		Part* part = nullptr;
-		do
-		{
-			spawnInXY(factorX, factorY);
-			part = diffusion(firstFrame);
-			if (part)
-			{
-				double differenceX = part->getX() - factorX;
-				double differenceY = part->getX() - factorX;
-
-				if (differenceX != 0)
-				{
-					differenceX /= abs(differenceX);
-				}
-				if (differenceY != 0)
-				{
-					differenceY /= abs(differenceY);
-				}
-
-				double horisontalFactor = (double)1 / windowWidth * 2 * differenceX;
-				double verticalFactor = (double)1 / windowHeight * 2 * differenceY;
-
-				factorX += horisontalFactor;
-				factorY += verticalFactor;
-			}
-		} while (part);
-	}
-}
-
-void Creation::moveToUp(Node<Frame>* firstFrame)
-{
-}
-
-void Creation::moveToDown(Node<Frame>* firstFrame)
-{
-}
-
-void Creation::jump()
-{
-
 }
 
 
@@ -336,8 +482,8 @@ void Environment::spawnInXY(double x, double y)
 
 // Base constructions\destructions
 
-Base::Base(const char** title, const char** description, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame, int defaultSpawnPointDisplacementPxlX, int defaultSpawnPointDisplacementPxlY, int windowWidth, int windowHeight) :
-	Part(title, description, linkSystem, shape, defaultFrame)
+Base::Base(const char** title, const char** description, double totalResistance, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame, int defaultSpawnPointDisplacementPxlX, int defaultSpawnPointDisplacementPxlY, int windowWidth, int windowHeight) :
+	Part(title, description, totalResistance, linkSystem, shape, defaultFrame)
 {
 	defaultSpawnPointDisplacementX = (double)defaultSpawnPointDisplacementPxlX / windowWidth * 2;
 	defaultSpawnPointDisplacementY = (double)defaultSpawnPointDisplacementPxlY / windowHeight * 2;
@@ -350,23 +496,57 @@ Base::Base(const char** title, const char** description, LinkSystem* linkSystem,
 
 // Chassis constructors\destrructors
 
-Chassis::Chassis(const char** title, const char** description, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame, double horisontalSpeedMult, double verticalSpeedMult) :
-	Part(title, description, linkSystem, shape, defaultFrame)
+Chassis::Chassis(const char** title, const char** description, double totalResistance, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame,
+	double horisontalBoostMult, double verticalBoostMult,
+	double maxHorisontalSpeedMult, double maxVerticalSpeedMult,
+	double horisontalBreakMult, double verticalBreakMult, 
+	double jumpPowerMult) :
+	Part(title, description, totalResistance, linkSystem, shape, defaultFrame)
 {
-	this->horisontalSpeedMult = horisontalSpeedMult;
-	this->verticalSpeedMult = verticalSpeedMult;
+	this->horisontalBoostMult = horisontalBoostMult;
+	this->verticalBoostMult = verticalBoostMult;
+	this->maxHorisontalSpeedMult = maxHorisontalSpeedMult;
+	this->maxVerticalSpeedMult = maxVerticalSpeedMult;
+	this->horisontalBreakMult = horisontalBreakMult;
+	this->verticalBreakMult = verticalBreakMult;
+	this->jumpPowerMult = jumpPowerMult;
 }
 
 // Chassis getters
 
-double Chassis::getHorizontalSpeedMult()
+double Chassis::getHorizontalBoostMult()
 {
-	return horisontalSpeedMult;
+	return horisontalBoostMult;
 }
 
-double Chassis::getVerticalSpeedMult()
+double Chassis::getVerticalBoostMult()
 {
-	return verticalSpeedMult;
+	return verticalBoostMult;
+}
+
+double Chassis::getMaxHorisontalSpeedMult()
+{
+	return maxHorisontalSpeedMult;
+}
+
+double Chassis::getMaxVerticalSpeedMult()
+{
+	return maxVerticalSpeedMult;
+}
+
+double Chassis::getHorisontalBreakMult()
+{
+	return horisontalBreakMult;
+}
+
+double Chassis::getVerticalBreakMult()
+{
+	return verticalBreakMult;
+}
+
+double Chassis::getJumpPowerMult()
+{
+	return jumpPowerMult;
 }
 
 // ---------------------
@@ -375,10 +555,10 @@ double Chassis::getVerticalSpeedMult()
 
 // Accessory constructors\destructors
 
-Accessory::Accessory(const char** title, const char** description, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame) :
-	Part(title, description, linkSystem, shape, defaultFrame)
+Accessory::Accessory(const char** title, const char** description, double totalResistance, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame) :
+	Part(title, description, totalResistance, linkSystem, shape, defaultFrame)
 {
-
+	shape->setPhisical(false);
 }
 
 // Accessory methods
@@ -386,4 +566,39 @@ Accessory::Accessory(const char** title, const char** description, LinkSystem* l
 bool Accessory::diffusion(Part* part)
 {
 	return false;
+}
+
+// ----------------------
+// Decoration class block
+// ----------------------
+
+// Decoration constructors\desctructors
+
+Decoration::Decoration(const char** title, const char** description, double totalResistance, LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame) :
+	Part(title, description, totalResistance, linkSystem, shape, defaultFrame)
+{
+
+}
+
+// -------------------------
+// ContactWeapon class block
+// -------------------------
+
+// ContactWeapon constructors\destructors;
+
+ContactWeapon::ContactWeapon(const char** title, const char** description, double totalResistance, double contactDamageMult, 
+	LinkSystem* linkSystem, Shape* shape, Frame* defaultFrame) :
+	Part(title, description, totalResistance, linkSystem, shape, defaultFrame)
+{
+	this->contactDamageMult = contactDamageMult;
+}
+
+// ContactWeapon methods
+
+void ContactWeapon::show(int activePhase, bool reverse)
+{
+	glColor3d(1.0, 0.0, 0.0);
+	std::cout << "ok";
+	Part::show(activePhase, reverse);
+	glColor3b(1.0, 1.0, 1.0);
 }
